@@ -1,17 +1,34 @@
-# Dockerfile
-FROM python:3.10-slim
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Set the working directory in the container
-WORKDIR /app
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Copy the requirements file into the container
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg2 \
+    unixodbc-dev \
+    apt-transport-https
+
+# Add the Microsoft package repository
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
+# Set the working directory
+WORKDIR /code
+
+# Copy the requirements file
 COPY requirements.txt .
 
-# Install the dependencies
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the FastAPI app code into the container
+# Copy the rest of the application code
 COPY . .
 
-# Command to run the FastAPI app with Uvicorn
+# Command to run the application
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
