@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlalchemy import Table, Column, Integer, String, Date, MetaData
 from datetime import date
 from typing import Optional
@@ -32,6 +32,14 @@ class EmployeeBase(BaseModel):
     supervisor: str
     joinDate: date
     resignDate: Optional[date] = None
+
+    @validator('joinDate', 'resignDate', pre=True, always=True)
+    def validate_dates(cls, value):
+        if value is None:
+            return value
+        if isinstance(value, str):
+            return date.fromisoformat(value)
+        return value
 
 class EmployeeCreate(EmployeeBase):
     pass

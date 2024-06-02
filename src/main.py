@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from .routes import employees
+from src.routes import employee_route
+from src.middleware.basic_auth_middleware import BasicAuthMiddleware
 
 app = FastAPI()
 
-app.include_router(employees.router, tags=["employee"])
+app.include_router(employee_route.router, tags=["Employee"])
