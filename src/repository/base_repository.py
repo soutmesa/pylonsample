@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-from typing import Type, TypeVar, Generic, List, Optional
-# from sqlalchemy import Table, select, update, delete
+from typing import Type, TypeVar, Generic
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -38,33 +37,3 @@ class BaseRepository(Generic[ModelType]):
         self.db.delete(obj)
         self.db.commit()
         return obj
-
-    # def get_all(self) -> List[T]:
-    #     query = select(self.table)
-    #     result = self.db.execute(query)
-    #     return [row._mapping for row in result]
-
-    # def get_by_id(self, id: int) -> Optional[T]:
-    #     query = select(self.table).where(self.table.id == id)
-    #     result = self.db.execute(query).scalar_one_or_none()
-    #     return dict(result._mapping) if result else None
-
-    # def create(self, obj_in: T) -> T:
-    #     self.db.add(obj_in)
-    #     self.db.commit()
-    #     self.db.refresh(obj_in)
-    #     return obj_in
-
-    # def update(self, id: int, obj_in: dict) -> Optional[T]:
-    #     query = update(self.table).where(self.table.id == id).values(**obj_in).execution_options(synchronize_session="fetch")
-    #     result = self.db.execute(query)
-    #     if result.rowcount == 0:
-    #         return None
-    #     self.db.commit()
-    #     return self.get_by_id(id)
-
-    # def delete(self, id: int) -> bool:
-    #     query = delete(self.table).where(self.table.id == id)
-    #     result = self.db.execute(query)
-    #     self.db.commit()
-    #     return result.rowcount > 0
