@@ -4,10 +4,10 @@ This project aims to provide a comprehensive solution for managing employee data
 It includes functionalities for viewing, updating, and exporting employee data, as well as implementing basic authentication for securing access to the APIs.
 
 ## Features
-- [Employee Data Management]: Allows users to view and update employee details such as designation, project, team, supervisor, join date, and resign date.
-- [CSV Export]: Provides an endpoint to export employee data in CSV format.
-- [Basic Authentication]: Implements basic authentication to secure access to the APIs.
-- [API Documentation]: Generates interactive API documentation using Swagger UI and Redocly.
+- **Employee Data Management**: Allows users to view and update employee details such as designation, project, team, supervisor, join date, and resign date.
+- **CSV Export**: Provides an endpoint to export employee data in CSV format.
+- **Basic Authentication**: Implements basic authentication to secure access to the APIs.
+- **API Documentation**: Generates interactive API documentation using Swagger UI and Redocly.
 
 ## Table of Contents
 
@@ -16,6 +16,7 @@ It includes functionalities for viewing, updating, and exporting employee data, 
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
 - [API Documentation](#api-documentation)
+- [Usage](#usage)
 
 ## Project Structure
 ```bash
@@ -45,7 +46,7 @@ It includes functionalities for viewing, updating, and exporting employee data, 
 │ └── sample_manpower_list_service.py
 ├── main.py
 ```
-Briefly describe the structure of the project and the purpose of each directory:
+Structure of the project and the purpose of each directory:
 
 - **core**: Contains core functionalities such as database connection and dependencies.
 - **middleware**: Includes custom middleware, such as authentication middleware.
@@ -91,22 +92,63 @@ Set up the environment variables
 - Create a .env file in the project root directory.
 - Add the following configurations to the .env file
 ```bash
-DATABASE_URL="mssql+pyodbc://sa:DB_Password@localhost/PylonProductionData_ForTesting?driver=ODBC+Driver+17+for+SQL+Server"
+DB_HOST=localhost
+# or DB_HOST=sqlserver enable sqlserver in docker-compose.yml
+DB_USER=sa
+DB_PASSWORD="DB_Password"
+DATABASE_URL="mssql+pymssql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/PylonProductionData_ForTesting"
 
-// Basic auth credentials
-USERNAME=TestUser1
-PASSWORD="TestUs3r1#21"
+# Basic auth credentials
+USERNAME=user
+PASSWORD="pass"
 
-// Expose port for running with docker only
+# Expose port for running with docker only
 CONTAINER_PORT=4000
 ```
 
 ## Running the Application
 Once the project environment is set up, you can run the FastAPI application:
-
+### Running with uvicorn
 ```bash
 # Run the FastAPI application
 uvicorn src.main:app --reload
+```
+
+### Running with Docker Compose
+To run the application using Docker Compose, follow these steps:
+
+1. Ensure Docker is installed on your machine.
+
+2. Build and start the Docker containers:
+
+```bash
+version: "3.8"
+
+services:
+  app:
+    container_name: pylonsample
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "${CONTAINER_PORT}:8000"
+    restart: always
+    # Enable this if sqlserver is enable
+    # depends_on:
+    #   - sqlserver
+
+  # Enable this if need to run this container
+  # sqlserver:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   environment:
+  #     SA_PASSWORD: "DB_Password"
+  #     ACCEPT_EULA: "Y"
+  #   ports:
+  #     - "1433:1433"
+```
+
+```bash
+docker-compose up -d
 ```
 
 ## API Documentation
@@ -115,3 +157,36 @@ You can access these API documentations after running the application.
 
 - [Swagger UI (http://localhost:8000/docs)](http://localhost:8000/docs)
 - [Redoc UI (http://localhost:8000/redoc)](http://localhost:8000/redoc)
+
+## Usage
+### Example with cURL
+Here are some example cURL commands to interact with your FastAPI application using Basic Authentication:
+
+1. Encode your credentials (USERNAME
+) in base64. You can do this using an online tool or with the following command in a Unix-based terminal:
+```bash
+echo -n "USERNAME:PASSWORD" | base64
+```
+Replace USERNAME and PASSWORD with your actual credentials. This will output a base64 encoded string.
+
+2. Use the encoded credentials in your cURL requests.
+For example, if the encoded string is dXNlcm5hbWU6cGFzc3dvcmQ=, you can use it as follows:
+
+- Retrieve all employees:
+```bash
+curl -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" http://localhost:8000/api/v1/employees
+```
+- Update employee details (replace {manpowerId} with the actual ID):
+```bash
+curl -X PATCH -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" -H "Content-Type: application/json" -d '{"designation": "New Designation", "project": "New Project", "team": "New Team", "supervisor": "New Supervisor", "joinDate": "2024-01-01", "resignDate": "2024-12-31"}' http://localhost:8000/api/v1/employees/{manpowerId}
+```
+- Download employee data as CSV
+```
+curl -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" -o employees.csv http://localhost:8000/api/v1/employees/csv
+```
+Replace `dXNlcm5hbWU6cGFzc3dvcmQ=` with your actual base64 encoded credentials and http://localhost:8000 with the appropriate URL if your FastAPI application is hosted elsewhere.
+
+## Swagger UI
+![Swagger UI](assets/swagger.png)
+## Redoc UI
+![Redoc UI](assets/redoc.png)
