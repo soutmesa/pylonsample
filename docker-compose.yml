@@ -5,5 +5,5 @@ services:
     container_name: pylonsample
     build: .
     ports:
-      - "${PORT}:8000"
+      - "${CONTAINER_PORT}:8000"
     restart: always
