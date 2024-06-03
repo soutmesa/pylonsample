@@ -1,34 +1,30 @@
-# Use an official Python runtime as a parent image
+# Use the official Python image as base
 FROM python:3.9-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Install required packages
-RUN apt-get update && apt-get install -y \
-    curl \
-    gnupg2 \
-    unixodbc-dev \
-    apt-transport-https
+# Set the working directory in the container
+WORKDIR /app
 
-# Add the Microsoft package repository
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-    apt-get update && \
-    ACCEPT_EULA=Y apt-get install -y msodbcsql17
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        freetds-dev \
+        gcc \
+        unixodbc-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
-WORKDIR /code
-
-# Copy the requirements file
+# Install Python dependencies
 COPY requirements.txt .
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy project files into the container
 COPY . .
+
+# Expose the port the app runs on
+EXPOSE 8000
 
 # Command to run the application
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

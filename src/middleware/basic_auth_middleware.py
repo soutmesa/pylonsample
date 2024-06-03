@@ -8,6 +8,8 @@ PASSWORD = os.getenv('PASSWORD')
 security = HTTPBasic()
 
 async def authenticate(request, call_next):
+    if request.url.path in ('/', '/docs', '/redoc', '/openapi.json'):  # Exclude root path and /docs from authentication
+        return await call_next(request)
     try:
         auth = request.headers["Authorization"]
         scheme, credentials = auth.split()
