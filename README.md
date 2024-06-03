@@ -1,4 +1,4 @@
-# Project Title
+# Employee Management API
 
 This project aims to provide a comprehensive solution for managing employee data using FastAPI, SQLAlchemy, and a Microsoft SQL Server database.
 It includes functionalities for viewing, updating, and exporting employee data, as well as implementing basic authentication for securing access to the APIs.
@@ -150,6 +150,8 @@ services:
 ```bash
 docker-compose up -d
 ```
+
+Please make sure, you already setup database schema, checkout db.sql in case you did not.
 
 ## API Documentation
 
