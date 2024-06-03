@@ -1,32 +1,35 @@
-from fastapi import Request, HTTPException, Depends, Response
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from dotenv import load_dotenv
-from starlette.middleware.base import BaseHTTPMiddleware
-from base64 import b64decode
-import os
-
-load_dotenv()
+from fastapi import Response
+from fastapi.security import HTTPBasic
+import os, base64
 
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
 
-# Security setup
 security = HTTPBasic()
 
-def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
-    if credentials.username != USERNAME or credentials.password != PASSWORD:
-        raise HTTPException(status_code=401, detail="Invalid credentials", headers={"WWW-Authenticate": "Basic"})
-    return True
-
-class BasicAuthMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, auth_dependency):
-        super().__init__(app)
-        self.auth_dependency = auth_dependency
-
-    async def dispatch(self, request: Request, call_next):
-        try:
-            await self.auth_dependency()
-        except HTTPException as e:
-            return Response(content=e.detail, status_code=e.status_code, headers=e.headers)
-        response = await call_next(request)
-        return response
+async def authenticate(request, call_next):
+    try:
+        auth = request.headers["Authorization"]
+        scheme, credentials = auth.split()
+        assert scheme.lower() == "basic"
+        username, password = base64.b64decode(credentials).decode().split(":")
+        if username == USERNAME and password == PASSWORD:
+            response = await call_next(request)
+        else:
+            response = Response(
+                "Unauthorized",
+                status_code=401,
+                headers={"WWW-Authenticate": "Basic"},
+            )
+    except KeyError:
+        response = Response(
+            "Unauthorized",
+            status_code=401,
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    except Exception as e:
+        response = Response(
+            "Internal Server Error",
+            status_code=500
+        )
+    return response
