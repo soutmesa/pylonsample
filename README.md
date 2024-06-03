@@ -46,7 +46,7 @@ It includes functionalities for viewing, updating, and exporting employee data, 
 │ └── sample_manpower_list_service.py
 ├── main.py
 ```
-Briefly describe the structure of the project and the purpose of each directory:
+Structure of the project and the purpose of each directory:
 
 - **core**: Contains core functionalities such as database connection and dependencies.
 - **middleware**: Includes custom middleware, such as authentication middleware.
@@ -122,6 +122,32 @@ To run the application using Docker Compose, follow these steps:
 2. Build and start the Docker containers:
 
 ```bash
+version: "3.8"
+
+services:
+  app:
+    container_name: pylonsample
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "${CONTAINER_PORT}:8000"
+    restart: always
+    # Enable this if sqlserver is enable
+    # depends_on:
+    #   - sqlserver
+
+  # Enable this if need to run this container
+  # sqlserver:
+  #   image: mcr.microsoft.com/mssql/server:2022-latest
+  #   environment:
+  #     SA_PASSWORD: "DB_Password"
+  #     ACCEPT_EULA: "Y"
+  #   ports:
+  #     - "1433:1433"
+```
+
+```bash
 docker-compose up -d
 ```
 
@@ -158,7 +184,9 @@ curl -X PATCH -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" -H "Content-Typ
 ```
 curl -H "Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=" -o employees.csv http://localhost:8000/api/v1/employees/csv
 ```
-Replace dXNlcm5hbWU6cGFzc3dvcmQ= with your actual base64 encoded credentials and http://localhost:8000 with the appropriate URL if your FastAPI application is hosted elsewhere.
+Replace `dXNlcm5hbWU6cGFzc3dvcmQ=` with your actual base64 encoded credentials and http://localhost:8000 with the appropriate URL if your FastAPI application is hosted elsewhere.
 
+## Swagger UI
 ![Swagger UI](assets/swagger.png)
+## Redoc UI
 ![Redoc UI](assets/redoc.png)
